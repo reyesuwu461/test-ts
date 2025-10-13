@@ -1,70 +1,42 @@
-<!-- Personal info: replace with your name/contact or leave blank -->
+<!-- Personal info: replace with your name/contact -->
 ## Personal
 
 Name: Samuel Reyes Castro
-Clan/Route: Macondo/Typescript
-Contact: 
+
+Contact: https://github.com/reyesuwu461
 
 
-# vite-spa — Classic Vite + React Router SPA
+# vite-spa
 
-This repository contains a small single-page app built with Vite, React and React Router 6. It is designed as a learning/demo project and includes a mocked API (MSW) for local development, Storybook stories, and Playwright tests.
+Lightweight single-page app built with Vite, React, and React Router 6. Useful as a demo or starter for a small dashboard-style SPA. Includes a mocked API (MSW) for local development, Storybook stories, and Playwright tests.
 
-Highlights
+Table of Contents
 
-- React Router 6 data loaders & actions (route-level data fetching)
-- UI components built with shadcn/ui primitives and Radix
-- Dark/light mode support via Tailwind
-- Mocked API in dev using `msw`
-- Playwright tests and Storybook stories included
+- [Quickstart (Ubuntu / Linux)](#quickstart-ubuntu--linux)
+- [Project structure](#project-structure)
+- [Development notes](#development-notes)
+- [Testing](#testing)
+- [Common issues](#common-issues)
+- [Contributing](#contributing)
 
-Status: Development/demo — not production hardened.
-
-Project structure (important files)
+Project structure
 
 - `index.html` — app entry
 - `src/main.tsx` — app bootstrap and router
 - `src/routes/` — route components (login, register, vehicles, etc.)
-- `src/components/` — reusable UI components (Card, Input, Button...)
+- `src/components/` — reusable UI components
 - `src/mocks/` — MSW handlers & setup used in dev
 - `public/` — static assets (mock service worker)
 - `tests/` — Playwright tests
-- `package.json` — scripts & dependencies
 
-Quickstart — Windows (PowerShell)
+Quickstart — Ubuntu / Linux
 
-1) Instalar dependencias
+Prerequisites
 
-```powershell
-npm install
-```
+- Node.js (18+ recommended)
+- Git
 
-2) Levantar servidor de desarrollo (MSW activado)
-
-```powershell
-npm run dev
-```
-
-3) Abrir en el navegador
-
-Abre http://localhost:5173
-
-Notas sobre MSW
-
-- El proyecto usa un helper para arrancar Vite con la variable `VITE_MSW=true` para iniciar el service worker (esto habilita las respuestas mock en dev). Si arrancas Vite sin esa variable, las rutas esperan un backend real.
-
-Quickstart — Ubuntu / Linux (bash)
-
-1) Requisitos: Node.js + npm
-
-Recomendado: Node 18+ (o la versión que uses localmente). Comprueba la versión:
-
-```bash
-node --version
-npm --version
-```
-
-Si necesitas instalar Node.js en Ubuntu (NodeSource):
+Install Node (NodeSource example):
 
 ```bash
 sudo apt update
@@ -75,74 +47,40 @@ node --version
 npm --version
 ```
 
-2) Clonar el repositorio (si aún no lo tienes local)
+Clone and run
 
 ```bash
-# con HTTPS
-git clone https://github.com/tuusuario/vite-spa.git
-
-# o con SSH (si tienes claves configuradas)
-git clone git@github.com:tuusuario/vite-spa.git
-
+git clone https://github.com/reyesuwu461/vite-spa.git
 cd vite-spa
-```
-
-3) Instalar dependencias
-
-```bash
 npm install
-```
-
-4) Ejecutar en modo desarrollo
-
-```bash
-npm run dev
-```
-
-Nota: en bash puedes forzar el worker con la variable de entorno:
-
-```bash
 VITE_MSW=true npm run dev
 ```
 
-5) Abrir en el navegador
+Open http://localhost:5173 in your browser.
 
-Abre http://localhost:5173
+Development notes
 
-Notas y soluciones a problemas comunes
+- The dev server uses MSW (Mock Service Worker) when `VITE_MSW` is set to `true`.
+- API client uses `ky` and automatically attaches the `Authorization` header from a cookie.
 
-- Si ves errores relacionados con `@vitejs/plugin-react` u otras dependencias faltantes: instala la dependencia faltante, por ejemplo:
+Testing
+
+Run Playwright tests:
 
 ```bash
-npm install --save-dev @vitejs/plugin-react
-```
-
-- Si `npm run dev` indica que la variable `VITE_MSW` no está activa y las rutas devuelven errores, arranca con `VITE_MSW=true` o usa el helper adecuado.
-
-Tests
-
-- Playwright tests están en `tests/`. Para ejecutar:
-
-```powershell
 npm run test
 ```
 
-Recomendaciones antes de subir a GitHub
+Common issues
 
-- Añade un `.gitignore` (no subir `node_modules`, `.env`, builds, etc.)
-- No subir credenciales ni `env` con secretos
+- If `npm install` is very slow, consider using `npm ci` or switching to `pnpm`.
+- If Vite fails due to missing plugins, install them (e.g. `npm i -D @vitejs/plugin-react`).
+- If your project is on OneDrive move it to a local folder (OneDrive can slow filesystem IO).
 
-Minimal `.gitignore` sugerido
+Contributing
 
-```
-node_modules/
-dist/
-build/
-.vite/
-.vscode/
-.env
-.env.local
-npm-debug.log*
+- Open issues and PRs. Use feature branches and create PRs against `main`.
 
-public/mockServiceWorker.js
-```
+License
+
+This project is provided as-is for learning/demo purposes.

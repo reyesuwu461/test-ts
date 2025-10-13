@@ -2,7 +2,7 @@ import type { ActionFunctionArgs } from "react-router-dom";
 import { Form, redirect, useActionData, useNavigation, Link } from "react-router-dom";
 import Cookies from "js-cookie";
 import { HTTPError } from "ky";
-import { AlertCircle, User as UserIcon, Mail as MailIcon, Lock as LockIcon, Check as CheckIcon, Image as ImageIcon } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { register as apiRegister } from "../api";
 import { Alert, AlertDescription, AlertTitle } from "../components/alert";
 import { FormError } from "../components/form-error";
@@ -52,7 +52,6 @@ export function Component() {
   const navigation = useNavigation();
 
   const [selectedAvatar, setSelectedAvatar] = React.useState<number | null>(null);
-  const [agreedToTerms, setAgreedToTerms] = React.useState<boolean>(false);
   const [formData, setFormData] = React.useState({
     username: "",
     email: "",
