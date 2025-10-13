@@ -1,11 +1,13 @@
 import type { ActionFunctionArgs } from "react-router-dom";
-import { Form, Link, redirect, useLoaderData } from "react-router-dom";
+import { Form, Link, redirect, useLoaderData, useSearchParams } from "react-router-dom";
 import {
   createVehicle,
   getColors,
   getManufacturers,
   getModels,
   getTypes,
+  getVehicle,
+  updateVehicle,
 } from "../api";
 import {
   Breadcrumb,
@@ -24,19 +26,31 @@ import { Separator } from "../components/separator";
 import { getColorName } from "../lib/color";
 import { privateLoader } from "../lib/private-loader";
 
-export const loader = privateLoader(async () => {
+export const loader = privateLoader(async ({ request }) => {
+  const url = new URL(request.url);
+  const id = url.searchParams.get("id");
+
   const [manufacturers, models, types, colors] = await Promise.all([
     getManufacturers(),
     getModels(),
     getTypes(),
     getColors(),
   ]);
+
+  if (id) {
+    const vehicle = await getVehicle(id);
+    return { manufacturers, models, types, colors, vehicle };
+  }
+
   return { manufacturers, models, types, colors };
 });
 
 export async function action({ request }: ActionFunctionArgs) {
+  const url = new URL(request.url);
+  const id = url.searchParams.get("id");
   const formData = await request.formData();
-  const vehicle = await createVehicle({
+
+  const body = {
     vrm: formData.get("vrm") as string,
     manufacturer: formData.get("manufacturer") as string,
     model: formData.get("model") as string,
@@ -47,7 +61,14 @@ export async function action({ request }: ActionFunctionArgs) {
     price: formData.get("price") as string,
     registrationDate: formData.get("registrationDate") as string,
     vin: formData.get("vin") as string,
-  });
+  };
+
+  if (id) {
+    const vehicle = await updateVehicle(id, body);
+    return redirect(`/vehicles/${vehicle.id}`);
+  }
+
+  const vehicle = await createVehicle(body);
   return redirect(`/vehicles/${vehicle.id}`);
 }
 
@@ -57,7 +78,12 @@ export function Component() {
     models: Array<string>;
     types: Array<string>;
     colors: Array<string>;
+    vehicle?: any;
   };
+
+  const params = useSearchParams()[0];
+  const editId = params.get("id");
+  const vehicle = (useLoaderData() as any).vehicle;
 
   return (
     <>
@@ -79,7 +105,7 @@ export function Component() {
             {/* VRM */}
             <div className="space-y-1">
               <Label htmlFor="vrm">Registration number</Label>
-              <Input id="vrm" name="vrm" type="text" required />
+              <Input id="vrm" name="vrm" type="text" required defaultValue={vehicle?.vrm ?? ''} />
             </div>
 
             <Separator className="col-span-full" />
@@ -90,7 +116,7 @@ export function Component() {
               <Select
                 id="manufacturer"
                 name="manufacturer"
-                defaultValue=""
+                defaultValue={vehicle?.manufacturer ?? ''}
                 required
               >
                 <option value="" disabled>
@@ -105,7 +131,7 @@ export function Component() {
             {/* Model */}
             <div className="space-y-1">
               <Label htmlFor="model">Model</Label>
-              <Select id="model" name="model" defaultValue="" required>
+              <Select id="model" name="model" defaultValue={vehicle?.model ?? ''} required>
                 <option value="" disabled>
                   Select a model
                 </option>
@@ -118,7 +144,7 @@ export function Component() {
             {/* Type */}
             <div className="space-y-1">
               <Label htmlFor="type">Type</Label>
-              <Select id="type" name="type" defaultValue="" required>
+              <Select id="type" name="type" defaultValue={vehicle?.type ?? ''} required>
                 <option value="" disabled>
                   Select a type
                 </option>
@@ -131,7 +157,7 @@ export function Component() {
             {/* Color */}
             <div className="space-y-1">
               <Label htmlFor="color">Colour</Label>
-              <Select id="color" name="color" defaultValue="" required>
+              <Select id="color" name="color" defaultValue={vehicle?.color ?? ''} required>
                 <option value="" disabled>
                   Select a colour
                 </option>
@@ -144,7 +170,7 @@ export function Component() {
             {/* Fuel type */}
             <div className="space-y-1">
               <Label htmlFor="fuel">Fuel</Label>
-              <Select id="fuel" name="fuel" defaultValue="" required>
+              <Select id="fuel" name="fuel" defaultValue={vehicle?.fuel ?? ''} required>
                 <option value="" disabled>
                   Select a fuel type
                 </option>
@@ -166,6 +192,7 @@ export function Component() {
                 required
                 pattern="\d*"
                 title="Only whole numbers are allowed"
+                defaultValue={vehicle?.mileage ?? ''}
               />
             </div>
 
@@ -177,13 +204,14 @@ export function Component() {
                 name="registrationDate"
                 type="date"
                 required
+                defaultValue={vehicle?.registrationDate ?? ''}
               />
             </div>
 
             {/* VIN */}
             <div className="space-y-1">
               <Label htmlFor="vin">VIN</Label>
-              <Input id="vin" name="vin" type="text" required />
+              <Input id="vin" name="vin" type="text" required defaultValue={vehicle?.vin ?? ''} />
             </div>
 
             {/* Price */}
@@ -197,6 +225,7 @@ export function Component() {
                 required
                 pattern="\d*"
                 title="Only whole numbers are allowed"
+                defaultValue={vehicle?.price ?? ''}
               />
             </div>
           </CardContent>
@@ -204,7 +233,7 @@ export function Component() {
             <Button variant="outline" asChild>
               <Link to="/">Cancel</Link>
             </Button>
-            <Button type="submit">Add</Button>
+            <Button type="submit">{editId ? 'Save' : 'Add'}</Button>
           </CardFooter>
         </Card>
       </Form>

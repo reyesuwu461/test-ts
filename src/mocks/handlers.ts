@@ -361,6 +361,49 @@ export const handlers = [
     },
   ),
 
+  http.patch(
+    `${import.meta.env.VITE_API_URL}/api/vehicles/:id`,
+    async ({ request, params }) => {
+      await delay(DELAY);
+
+      // Read Authorization header: 'Bearer <token>'
+      const auth = request.headers.get('authorization') || '';
+      const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+
+      if (!token || !sessions[token]) {
+        return new HttpResponse(null, { status: 401 }) as StrictResponse<never>;
+      }
+
+      const userId = sessions[token];
+      const acting = users.find((u) => u.id === userId);
+      if (!acting) {
+        return new HttpResponse(null, { status: 401 }) as StrictResponse<never>;
+      }
+
+      const vehicle = vehicles.find((v) => v.id === params.id);
+      if (!vehicle) {
+        return new HttpResponse(null, { status: 404 }) as StrictResponse<never>;
+      }
+
+      // Only admin owners can edit
+      if (acting.role !== 'rolos admir' || vehicle.ownerId !== acting.id) {
+        return new HttpResponse(null, { status: 403 }) as StrictResponse<never>;
+      }
+
+      const body = await request.json();
+      // Apply allowed updates
+      const allowed = ['vrm','manufacturer','model','type','fuel','color','price','mileage','registrationDate','vin'];
+      for (const key of Object.keys(body)) {
+        if ((allowed as string[]).includes(key)) {
+          // @ts-ignore
+          vehicle[key] = body[key];
+        }
+      }
+
+      return HttpResponse.json(vehicle);
+    },
+  ),
+
   http.get<PathParams, DefaultBodyType, Array<string>>(
     `${import.meta.env.VITE_API_URL}/api/manufacturers`,
     async () => {

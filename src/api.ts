@@ -107,3 +107,10 @@ export async function createVehicle(body: VehicleFormData) {
     .json();
   return vehicle;
 }
+
+export async function updateVehicle(id: string, body: Partial<VehicleFormData>) {
+  const vehicle: Vehicle = await api
+    .patch(`/api/vehicles/${id}`, { json: body })
+    .json();
+  return vehicle;
+}
