@@ -390,13 +390,13 @@ export const handlers = [
         return new HttpResponse(null, { status: 403 }) as StrictResponse<never>;
       }
 
-      const body = await request.json();
+      const body = (await request.json()) as Record<string, unknown>;
       // Apply allowed updates
-      const allowed = ['vrm','manufacturer','model','type','fuel','color','price','mileage','registrationDate','vin'];
+      const allowed = ['vrm', 'manufacturer', 'model', 'type', 'fuel', 'color', 'price', 'mileage', 'registrationDate', 'vin'];
       for (const key of Object.keys(body)) {
-        if ((allowed as string[]).includes(key)) {
-          // @ts-ignore
-          vehicle[key] = body[key];
+        if (allowed.includes(key)) {
+          // assign dynamically; body and vehicle are untyped here
+          (vehicle as any)[key] = (body as any)[key];
         }
       }
 
