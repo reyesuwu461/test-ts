@@ -27,6 +27,8 @@ export async function action({ request }: ActionFunctionArgs) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const confirmPassword = formData.get("confirmPassword") as string;
+  const role = (formData.get("role") as string) || "user";
+  const avatar = formData.get("avatar") ? Number(formData.get("avatar")) : undefined;
 
   if (!username) errors.username = "Username is required.";
   if (!email) errors.email = "Email is required.";
@@ -36,7 +38,7 @@ export async function action({ request }: ActionFunctionArgs) {
   if (Object.keys(errors).length > 0) return errors;
 
   try {
-    const session = await apiRegister(username, email, password);
+  const session = await apiRegister(username, email, password, role, avatar);
     Cookies.set("token", (session as any).token);
     return redirect("/");
   } catch (error) {
@@ -52,6 +54,7 @@ export function Component() {
   const navigation = useNavigation();
 
   const [selectedAvatar, setSelectedAvatar] = React.useState<number | null>(null);
+  const [role, setRole] = React.useState<string>("user");
   const [formData, setFormData] = React.useState({
     username: "",
     email: "",
@@ -70,6 +73,15 @@ export function Component() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  // Sync avatar when role changes: user -> avatar 1, admin -> avatar 2
+  React.useEffect(() => {
+    if (role === "rolos admir") {
+      setSelectedAvatar(2);
+    } else {
+      setSelectedAvatar(1);
+    }
+  }, [role]);
 
   return (
     <Form method="post">
@@ -106,14 +118,48 @@ export function Component() {
             </div>
 
             <div>
-              <Label>Choose Avatar</Label>
+              <Label>Role</Label>
               <div className="flex gap-4 justify-center py-2">
-                {avatars.map((avatar) => (
-                  <button key={avatar.id} type="button" onClick={() => setSelectedAvatar(avatar.id)} className={`w-16 h-16 rounded-lg ${avatar.color} transition-all hover:scale-110 ${selectedAvatar === avatar.id ? 'ring-4 ring-primary scale-105' : 'opacity-70 hover:opacity-100'}`}>
-                    <div className="w-full h-full flex items-center justify-center text-2xl">{avatar.emoji}</div>
-                  </button>
-                ))}
+                <label className="flex items-center gap-2">
+                  <input type="radio" name="role" value="user" checked={role === 'user'} onChange={(e) => setRole(e.target.value)} className="accent-primary" />
+                  <span className="text-sm">User</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input type="radio" name="role" value="rolos admir" checked={role === 'rolos admir'} onChange={(e) => setRole(e.target.value)} className="accent-primary" />
+                  <span className="text-sm">Admin</span>
+                </label>
               </div>
+
+              <Label>Choose Avatar</Label>
+              <div className="flex gap-6 justify-center py-2">
+                {avatars.map((avatar) => {
+                  const label = avatar.id === 1 ? 'User avatar' : avatar.id === 2 ? 'Admin avatar' : `Avatar ${avatar.id}`;
+                  return (
+                    <div key={avatar.id} className="flex flex-col items-center gap-2">
+                      <button
+                        type="button"
+                        title={label}
+                        aria-label={label}
+                        onClick={() => { setSelectedAvatar(avatar.id); setRole(role); }}
+                        className={`w-16 h-16 rounded-lg ${avatar.color} transition-all hover:scale-110 ${selectedAvatar === avatar.id ? 'ring-4 ring-primary scale-105' : 'opacity-70 hover:opacity-100'}`}
+                      >
+                        <div className="w-full h-full flex items-center justify-center text-2xl">{avatar.emoji}</div>
+                      </button>
+                      <span className="text-xs text-slate-400">{label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Hidden inputs to submit selected avatar and role */}
+              <input type="hidden" name="avatar" value={selectedAvatar ?? ''} />
+              <input type="hidden" name="role" value={role} />
+              {role === 'rolos admir' && (
+                <div className="mt-2">
+                  <Label htmlFor="adminCode">Admin Code</Label>
+                  <Input id="adminCode" name="adminCode" type="password" />
+                  <p className="text-xs text-slate-400 mt-1">Enter the admin code provided by the site owner to create an admin account.</p>
+                </div>
+              )}
             </div>
           </CardContent>
 

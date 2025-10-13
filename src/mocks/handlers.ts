@@ -113,7 +113,7 @@ export const handlers = [
   ),
 
   // Register endpoint
-  http.post<PathParams, { username: string; email: string; password: string; avatar?: number }, Session>(
+  http.post<PathParams, { username: string; email: string; password: string; avatar?: number; role?: string; adminCode?: string }, Session>(
     `${import.meta.env.VITE_API_URL}/api/register`,
     async ({ request }) => {
       await delay(DELAY);
@@ -128,13 +128,28 @@ export const handlers = [
         return new HttpResponse(null, { status: 409 }) as StrictResponse<never>;
       }
 
+      // Map role and avatar defaults
+      const role: Role = body.role === 'rolos admir' ? 'rolos admir' : 'user';
+      // If role is admin, require adminCode to match env var
+      if (role === 'rolos admir') {
+        const adminCode = body.adminCode as string | undefined;
+        const expected = import.meta.env.VITE_ADMIN_CODE;
+        if (!adminCode || adminCode !== expected) {
+          return new HttpResponse(null, { status: 403 }) as StrictResponse<never>;
+        }
+      }
+      const avatarIndex: number | undefined = typeof body.avatar === 'number' ? body.avatar : undefined;
+
+      // Simple avatar assignment: admin gets avatar 1, user avatar 0 if none provided
+      const avatar = avatarIndex !== undefined ? `avatar-${avatarIndex}` : role === 'rolos admir' ? 'avatar-admin' : 'avatar-user';
+
       const newUser: MockUser = {
         id: faker.string.uuid(),
         name: body.username,
         email: body.email,
         password: body.password,
-        avatar: undefined,
-        role: 'user',
+        avatar,
+        role,
       };
       users.push(newUser);
       const token = faker.string.uuid();

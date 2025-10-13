@@ -34,9 +34,9 @@ export async function login(email: string, password: string) {
   return user;
 }
 
-export async function register(username: string, email: string, password: string) {
+export async function register(username: string, email: string, password: string, role?: string, avatar?: number, adminCode?: string) {
   const session: Session = await api
-    .post("/api/register", { json: { username, email, password } })
+    .post("/api/register", { json: { username, email, password, role, avatar, adminCode } })
     .json();
   return session;
 }
