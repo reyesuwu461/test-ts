@@ -1,6 +1,6 @@
 import type * as React from "react";
-import { Form, useLoaderData, useNavigation } from "react-router-dom";
-import { getVehicle } from "../api";
+import { Form, useLoaderData, useNavigation, Link } from "react-router-dom";
+import { getVehicle, getUser } from "../api";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -79,13 +79,17 @@ function DeleteButton(props: { submitting: boolean }) {
   );
 }
 
-export const loader = privateLoader(
-  async ({ params }) => await getVehicle(params.id as string),
-);
+export const loader = privateLoader(async ({ params }) => {
+  const vehicle = await getVehicle(params.id as string);
+  const user = await getUser();
+  return { vehicle, user };
+});
 
 // TODO: use defer
 export function Component() {
-  const vehicle = useLoaderData() as Vehicle;
+  const data = useLoaderData() as { vehicle: Vehicle; user: any };
+  const vehicle = data.vehicle as Vehicle;
+  const currentUser = data.user as { id?: string; role?: string };
   const navigation = useNavigation();
 
   return (
@@ -148,8 +152,15 @@ export function Component() {
             <Detail label="VIN" value={vehicle.vin} />
           </dl>
         </CardContent>
-        <CardFooter>
-          <DeleteButton submitting={navigation.state === "submitting"} />
+        <CardFooter className="flex gap-2">
+          {currentUser?.role === "rolos admir" && currentUser?.id === vehicle.ownerId && (
+            <>
+              <Link to={`/add?id=${vehicle.id}`}>
+                <Button>Edit</Button>
+              </Link>
+              <DeleteButton submitting={navigation.state === "submitting"} />
+            </>
+          )}
         </CardFooter>
       </Card>
     </>

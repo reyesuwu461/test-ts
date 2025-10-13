@@ -36,6 +36,8 @@ export interface Vehicle {
   mileage: number;
   registrationDate: string;
   price: string;
+  // user id of the creator/owner (optional in fixtures)
+  ownerId?: string;
 }
 
 export type VehicleFormData = Omit<Vehicle, "id">;

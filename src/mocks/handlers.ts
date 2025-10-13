@@ -63,6 +63,8 @@ let vehicles: Array<Vehicle> = [...Array(vehicleCount).keys()].map(() => ({
   mileage: faker.number.int({ min: 1000, max: 25000 }),
   registrationDate: faker.date.past({ years: 10 }).toISOString().split("T")[0],
   price: faker.commerce.price({ min: 2000, max: 50000 }),
+  // Assign ownerId randomly among existing users (admin or regular)
+  ownerId: users[faker.number.int({ min: 0, max: users.length - 1 })].id,
 }));
 
 const DELAY = undefined;
@@ -342,7 +344,13 @@ export const handlers = [
         return new HttpResponse(null, { status: 401 }) as StrictResponse<never>;
       }
 
-      if (acting.role !== 'rolos admir') {
+      // Only allow admin users to delete vehicles they own
+      const vehicle = vehicles.find((v) => v.id === params.id);
+      if (!vehicle) {
+        return new HttpResponse(null, { status: 404 }) as StrictResponse<never>;
+      }
+
+      if (acting.role !== 'rolos admir' || vehicle.ownerId !== acting.id) {
         return new HttpResponse(null, { status: 403 }) as StrictResponse<never>;
       }
 
@@ -411,7 +419,16 @@ export const handlers = [
       await delay(DELAY);
 
       const body = await request.json();
-      const vehicle: Vehicle = { ...body, id: faker.string.uuid() };
+      // Determine owner from Authorization header
+      const auth = request.headers.get('authorization') || '';
+      const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+      const ownerId = token && sessions[token] ? sessions[token] : undefined;
+
+      if (!ownerId) {
+        return new HttpResponse(null, { status: 401 }) as StrictResponse<never>;
+      }
+
+      const vehicle: Vehicle = { ...body, id: faker.string.uuid(), ownerId };
       // Add to the array
       vehicles.push(vehicle);
       // Return the new vehicle
