@@ -22,12 +22,16 @@ interface MockUser {
   role: Role;
 }
 
+// Admin creation code (used by the register handler). It preferes the Vite env var
+// VITE_ADMIN_CODE but falls back to the example secret so it's easy to test locally.
+const adminCode = import.meta.env.VITE_ADMIN_CODE ?? 'changeme_admin_code';
+
 const users: MockUser[] = [
   {
     id: '1',
     name: 'Admin Rolos',
     email: 'admin@example.com',
-    password: 'adminpass',
+    password: 'adminpass', /**  'changeme_admin_code' */
     avatar: undefined,
     role: 'rolos admir',
   },
@@ -132,11 +136,11 @@ export const handlers = [
 
       // Map role and avatar defaults
       const role: Role = body.role === 'rolos admir' ? 'rolos admir' : 'user';
-      // If role is admin, require adminCode to match env var
+      // If role is admin, require adminCode to match env var/fallback
       if (role === 'rolos admir') {
-        const adminCode = body.adminCode as string | undefined;
-        const expected = import.meta.env.VITE_ADMIN_CODE;
-        if (!adminCode || adminCode !== expected) {
+        const adminCodeFromBody = body.adminCode as string | undefined;
+        const expected = adminCode; // top-level constant (prefers VITE_ADMIN_CODE)
+        if (!adminCodeFromBody || adminCodeFromBody !== expected) {
           return new HttpResponse(null, { status: 403 }) as StrictResponse<never>;
         }
       }
