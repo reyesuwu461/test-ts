@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from "react-router-dom";
-import { Form, redirect, useActionData, useNavigation } from "react-router-dom";
+import { Form, redirect, useActionData, useNavigation, Link } from "react-router-dom";
 import Cookies from "js-cookie";
 import { HTTPError } from "ky";
 import { AlertCircle } from "lucide-react";
@@ -81,7 +81,6 @@ export function Component() {
                 id="email"
                 name="email"
                 type="text"
-                defaultValue="jane.doe@company.com"
                 inputMode="email"
               />
               {error?.email && <FormError>{error.email}</FormError>}
@@ -92,7 +91,6 @@ export function Component() {
                 id="password"
                 name="password"
                 type="password"
-                defaultValue="verystrongpassword"
               />
               {error?.password && <FormError>{error.password}</FormError>}
             </div>
@@ -106,6 +104,13 @@ export function Component() {
               Sign in
             </LoadingButton>
           </CardFooter>
+
+          <div className="text-center mt-2">
+            <span className="text-sm text-slate-400">Don't have an account?{' '}</span>
+            <Link to="/register" className="text-sm font-medium text-primary underline">
+              Create one
+            </Link>
+          </div>
 
           {error?.form && (
             <CardFooter>

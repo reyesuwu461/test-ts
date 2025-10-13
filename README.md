@@ -1,49 +1,148 @@
-# Classic SPA built using Vite + React Router 6
+<!-- Personal info: replace with your name/contact or leave blank -->
+## Personal
 
-This is a statically built SPA that can be deployed without requiring a Node app server. The aim is to build a CRUD-style application using out-of-the-box React Router 6 features.
+Name: Samuel Reyes Castro
+Clan/Route: Macondo/Typescript
+Contact: 
 
-Highlights:
 
-- Uses React Router 6 data loaders, actions and lazy loaded routes.
-- UI components built using `shadcn/ui` and Radix.
-- Support for light and dark mode.
-- API mocking in dev mode using `msw`.
-- Full set of Playwright tests.
-- Storybook.
+# vite-spa — Classic Vite + React Router SPA
 
-Note that this app is not fully complete and the UX still has plenty of room for improvement.
+This repository contains a small single-page app built with Vite, React and React Router 6. It is designed as a learning/demo project and includes a mocked API (MSW) for local development, Storybook stories, and Playwright tests.
 
-## Getting started
+Highlights
 
-Run the app in dev mode with a mocked API:
+- React Router 6 data loaders & actions (route-level data fetching)
+- UI components built with shadcn/ui primitives and Radix
+- Dark/light mode support via Tailwind
+- Mocked API in dev using `msw`
+- Playwright tests and Storybook stories included
+
+Status: Development/demo — not production hardened.
+
+Project structure (important files)
+
+- `index.html` — app entry
+- `src/main.tsx` — app bootstrap and router
+- `src/routes/` — route components (login, register, vehicles, etc.)
+- `src/components/` — reusable UI components (Card, Input, Button...)
+- `src/mocks/` — MSW handlers & setup used in dev
+- `public/` — static assets (mock service worker)
+- `tests/` — Playwright tests
+- `package.json` — scripts & dependencies
+
+Quickstart — Windows (PowerShell)
+
+1) Instalar dependencias
+
+```powershell
+npm install
+```
+
+2) Levantar servidor de desarrollo (MSW activado)
+
+```powershell
+npm run dev
+```
+
+3) Abrir en el navegador
+
+Abre http://localhost:5173
+
+Notas sobre MSW
+
+- El proyecto usa un helper para arrancar Vite con la variable `VITE_MSW=true` para iniciar el service worker (esto habilita las respuestas mock en dev). Si arrancas Vite sin esa variable, las rutas esperan un backend real.
+
+Quickstart — Ubuntu / Linux (bash)
+
+1) Requisitos: Node.js + npm
+
+Recomendado: Node 18+ (o la versión que uses localmente). Comprueba la versión:
+
+```bash
+node --version
+npm --version
+```
+
+Si necesitas instalar Node.js en Ubuntu (NodeSource):
+
+```bash
+sudo apt update
+sudo apt install -y curl
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt-get install -y nodejs
+node --version
+npm --version
+```
+
+2) Clonar el repositorio (si aún no lo tienes local)
+
+```bash
+# con HTTPS
+git clone https://github.com/tuusuario/vite-spa.git
+
+# o con SSH (si tienes claves configuradas)
+git clone git@github.com:tuusuario/vite-spa.git
+
+cd vite-spa
+```
+
+3) Instalar dependencias
+
+```bash
+npm install
+```
+
+4) Ejecutar en modo desarrollo
 
 ```bash
 npm run dev
 ```
 
-Then point your browser at http://localhost:5173 to see the app in action.
+Nota: en bash puedes forzar el worker con la variable de entorno:
 
-## Potential improvements
+```bash
+VITE_MSW=true npm run dev
+```
 
-The `main` branch of this project aims to keep things as simple as possible but could be improved with the following additions:
+5) Abrir en el navegador
 
-- Adding better form validation at the `action` level using a schema validator like `zod` or `yup`
-- Introducing `react-hook-form` for better inline form validation (`onBlur` for example)
-- Using `defer`, `<Await />` and `<Suspense />` to wrap slow API calls and introduce a skeleton loading UI
-- Integrationg `@tanstack/query` at the `loader` level for cached API responses. Using `@tanstack/query@5` would allow a full `<Suspense />` experience via `useSuspenseQuery`.
+Abre http://localhost:5173
 
-## Notes on the developer experience
+Notas y soluciones a problemas comunes
 
-In no particular order.
+- Si ves errores relacionados con `@vitejs/plugin-react` u otras dependencias faltantes: instala la dependencia faltante, por ejemplo:
 
-- Moving data fetching to the router - so this happens before your page renders - feels very much like the right pattern to use based on feedback and comments from various React personalities in the business. Plus you are left with plenty of levers you can pull to improve the UX if necessary (deferring slow API calls and using a skeleton UI for example.)
-- Not implementing loading and errors states at the component level definitely keeps things simple
-- For all intents and purposes this app can be thought of as a Remix SPA. The next major version of `react-router-dom` will effectively be Remix anyway. There is an offical Remix SPA plugin for Vite but to keep it simple I have kept to using `createBrowserRouter`.
-- Vite uses `react-refresh` and this can cause `eslint` warnings when exporting plain functions from the same file as React components. I have tweaked the `.eslint.cjs` config to handle exported `loader` and `action` function as co-location of these with the related route is a DX win. But at least one component (`button.tsx`) required the `cva` styles to be moved to a separate file to keep `eslint` happy which is a little annoying. It will definitely catch everyone out.
-- Lazy loading of routes is simple enough using `lazy` but this comes with caveats. One of the advantages of route-level data fetching is it can happen in parallel to your code split route from loading. Making this work really requires splitting your `loader` into a separate file that is not code split, which means you lose the advantage of co-location. For this app I have opted for the loaders and actions to be part of the code split route bundle.
-- Having the logic around checking if a user is logged in at the route level is an absolute joy. It avoids a potentially messy provider or wrapper. In this app it's a simple check for a session cookie (so not production ready) via a special `privateLoader` wrapper, but you get the idea. Ideally you'd be using fetch interceptors (maybe switching `ky` out for `axios`) to handle authentication errors and token refreshes.
-- The React Router 6 documentation is lacking imho, with missing information on some hooks and some vagueness: particularly around `useFetcher` to load data after the route has rendered. For example, what if you wanted to perfrom some form of lookup as you type in a form? The docs imply you can use `useFetcher` to call another loader, but does that mean a virtual route that just exposes a loader? And if so that means no co-location of that looku with the form that needs it. It would be superb if the docs went into more detail on how this is meant to work.
-- Correctly typing `useLoaderData` is painful and can be ugly. For this app I have taken some shortcuts here via manual types but it definitely needs improvement.
-- Given the app shows off a dashboard, a table with pagination/filtering, a details page with a delete option and a form to add a new vehicle, there is only one `useEffect` hook and three `useState` hooks in the entire app.
-- The default Vite `eslint` config is too simple and requires some effort to address.
-- Vite uses separate Typescript config files for app-related code and node-related code. This feels like overkill and ensuring config files for other tools lint correctly can be frustrating.
+```bash
+npm install --save-dev @vitejs/plugin-react
+```
+
+- Si `npm run dev` indica que la variable `VITE_MSW` no está activa y las rutas devuelven errores, arranca con `VITE_MSW=true` o usa el helper adecuado.
+
+Tests
+
+- Playwright tests están en `tests/`. Para ejecutar:
+
+```powershell
+npm run test
+```
+
+Recomendaciones antes de subir a GitHub
+
+- Añade un `.gitignore` (no subir `node_modules`, `.env`, builds, etc.)
+- No subir credenciales ni `env` con secretos
+
+Minimal `.gitignore` sugerido
+
+```
+node_modules/
+dist/
+build/
+.vite/
+.vscode/
+.env
+.env.local
+npm-debug.log*
+
+public/mockServiceWorker.js
+```

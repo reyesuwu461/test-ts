@@ -1,5 +1,13 @@
+export type Role = 'rolos admir' | 'user';
+
 export interface Session {
   token: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    role?: Role;
+  };
 }
 
 export interface User {
@@ -7,6 +15,7 @@ export interface User {
   name: string;
   email: string;
   avatar: string;
+  role?: Role;
 }
 
 export interface Summary {

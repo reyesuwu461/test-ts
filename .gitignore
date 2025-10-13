@@ -28,3 +28,10 @@ dist-ssr
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Additional ignores
+.vite/
+.env
+.env.local
+public/mockServiceWorker.js
+out

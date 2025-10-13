@@ -1,4 +1,5 @@
 import ky from "ky";
+import Cookies from "js-cookie";
 import type {
   Chart,
   Session,
@@ -12,6 +13,18 @@ import type {
 const api = ky.create({
   prefixUrl: import.meta.env.VITE_API_URL,
   retry: 0,
+  hooks: {
+    beforeRequest: [request => {
+      try {
+        const token = Cookies.get("token");
+        if (token) {
+          request.headers.set("Authorization", `Bearer ${token}`);
+        }
+      } catch (e) {
+        // ignore
+      }
+    }]
+  }
 });
 
 export async function login(email: string, password: string) {
@@ -19,6 +32,13 @@ export async function login(email: string, password: string) {
     .post("/api/login", { json: { email, password } })
     .json();
   return user;
+}
+
+export async function register(username: string, email: string, password: string) {
+  const session: Session = await api
+    .post("/api/register", { json: { username, email, password } })
+    .json();
+  return session;
 }
 
 export async function getUser() {

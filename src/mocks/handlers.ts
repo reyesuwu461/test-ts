@@ -11,7 +11,37 @@ import type {
   VehicleList,
 } from "../types";
 
-const user: User = {
+// In-memory users store with roles
+type Role = 'rolos admir' | 'user';
+interface MockUser {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  avatar?: string;
+  role: Role;
+}
+
+const users: MockUser[] = [
+  {
+    id: '1',
+    name: 'Admin Rolos',
+    email: 'admin@example.com',
+    password: 'adminpass',
+    avatar: undefined,
+    role: 'rolos admir',
+  },
+  {
+    id: '2',
+    name: 'Regular User',
+    email: 'user@example.com',
+    password: 'userpass',
+    avatar: undefined,
+    role: 'user',
+  },
+];
+
+const defaultUser = {
   id: faker.string.uuid(),
   name: faker.person.fullName(),
   email: faker.internet.email(),
@@ -37,18 +67,27 @@ let vehicles: Array<Vehicle> = [...Array(vehicleCount).keys()].map(() => ({
 
 const DELAY = undefined;
 
+// Simple session store: token -> userId
+const sessions: Record<string, string> = {};
+
 export const handlers = [
   http.post<PathParams, { email: string; password: string }, Session>(
     `${import.meta.env.VITE_API_URL}/api/login`,
     async ({ request }) => {
       await delay(DELAY);
-
       const body = await request.json();
-      if (
-        body.email === "jane.doe@company.com" &&
-        body.password === "verystrongpassword"
-      ) {
-        return HttpResponse.json({ token: faker.string.uuid() });
+      const found = users.find(
+        (u) => u.email === body.email && u.password === body.password,
+      );
+      if (found) {
+        // Create token and map session
+        const token = faker.string.uuid();
+        sessions[token] = found.id;
+        // Return token and role
+        return HttpResponse.json({
+          token,
+          user: { id: found.id, name: found.name, email: found.email, role: found.role },
+        });
       }
 
       return new HttpResponse(null, { status: 401 }) as StrictResponse<never>;
@@ -57,10 +96,51 @@ export const handlers = [
 
   http.get<PathParams, DefaultBodyType, User>(
     `${import.meta.env.VITE_API_URL}/api/me`,
-    async () => {
+    async ({ request }) => {
       await delay(DELAY);
 
-      return HttpResponse.json(user);
+      const auth = request.headers.get("authorization") || "";
+      const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
+      if (token && sessions[token]) {
+        const u = users.find((x) => x.id === sessions[token]);
+        if (u) {
+          return HttpResponse.json({ id: u.id, name: u.name, email: u.email, avatar: u.avatar ?? "", role: u.role } as unknown as User);
+        }
+      }
+
+      return HttpResponse.json(defaultUser as unknown as User);
+    },
+  ),
+
+  // Register endpoint
+  http.post<PathParams, { username: string; email: string; password: string; avatar?: number }, Session>(
+    `${import.meta.env.VITE_API_URL}/api/register`,
+    async ({ request }) => {
+      await delay(DELAY);
+
+      const body = await request.json();
+      if (!body.email || !body.password || !body.username) {
+        return new HttpResponse(null, { status: 400 }) as StrictResponse<never>;
+      }
+
+      // Prevent duplicate email
+      if (users.some((u) => u.email === body.email)) {
+        return new HttpResponse(null, { status: 409 }) as StrictResponse<never>;
+      }
+
+      const newUser: MockUser = {
+        id: faker.string.uuid(),
+        name: body.username,
+        email: body.email,
+        password: body.password,
+        avatar: undefined,
+        role: 'user',
+      };
+      users.push(newUser);
+      const token = faker.string.uuid();
+      sessions[token] = newUser.id;
+
+      return HttpResponse.json({ token, user: { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role } });
     },
   ),
 
@@ -230,8 +310,26 @@ export const handlers = [
 
   http.delete(
     `${import.meta.env.VITE_API_URL}/api/vehicles/:id`,
-    async ({ params }) => {
+    async ({ request, params }) => {
       await delay(DELAY);
+
+      // Read Authorization header: 'Bearer <token>'
+      const auth = request.headers.get('authorization') || '';
+      const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+
+      if (!token || !sessions[token]) {
+        return new HttpResponse(null, { status: 401 }) as StrictResponse<never>;
+      }
+
+      const userId = sessions[token];
+      const acting = users.find((u) => u.id === userId);
+      if (!acting) {
+        return new HttpResponse(null, { status: 401 }) as StrictResponse<never>;
+      }
+
+      if (acting.role !== 'rolos admir') {
+        return new HttpResponse(null, { status: 403 }) as StrictResponse<never>;
+      }
 
       // Remove the vehicle from the array
       vehicles = vehicles.filter((v) => v.id !== params.id);

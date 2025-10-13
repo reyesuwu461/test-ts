@@ -68,6 +68,11 @@ void enableMocking().then(() => {
       lazy: () => import("./routes/login.tsx"),
       errorElement: <ErrorPage />,
     },
+        {
+          path: "register",
+          lazy: () => import("./routes/register.tsx"),
+          errorElement: <ErrorPage />,
+        },
     {
       path: "*",
       element: <NotFound />,
