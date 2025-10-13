@@ -54,7 +54,7 @@ function NavigationItem({
   );
 }
 
-function Navigation() {
+function Navigation({ user }: { user?: User }) {
   return (
     <aside className="fixed inset-y-0 left-0 hidden w-[72px] border-r bg-background sm:block">
       <div className="flex justify-center p-2">
@@ -69,7 +69,9 @@ function Navigation() {
         <nav className="flex flex-col gap-4 p-4">
           <NavigationItem to="/" icon={House} label="Home" />
           <NavigationItem to="/vehicles" icon={Car} label="Vehicles" />
-          <NavigationItem to="/add" icon={CirclePlus} label="Add Vehicle" />
+          {user?.role === "rolos admir" && (
+            <NavigationItem to="/add" icon={CirclePlus} label="Add Vehicle" />
+          )}
         </nav>
       </TooltipProvider>
     </aside>
@@ -111,7 +113,11 @@ function MobileNavigationItem(props: {
   );
 }
 
-function MobileNavigation(props: { open: boolean; onOpenChange: () => void }) {
+function MobileNavigation(props: {
+  open: boolean;
+  onOpenChange: () => void;
+  user?: User;
+}) {
   return (
     <Sheet open={props.open} onOpenChange={props.onOpenChange}>
       <SheetContent
@@ -133,12 +139,14 @@ function MobileNavigation(props: { open: boolean; onOpenChange: () => void }) {
             icon={Car}
             label="Vehicles"
           />
-          <MobileNavigationItem
-            to="/add"
-            onClick={props.onOpenChange}
-            icon={CirclePlus}
-            label="Add"
-          />
+          {props.user?.role === "rolos admir" && (
+            <MobileNavigationItem
+              to="/add"
+              onClick={props.onOpenChange}
+              icon={CirclePlus}
+              label="Add"
+            />
+          )}
         </nav>
       </SheetContent>
     </Sheet>
@@ -153,11 +161,12 @@ export function Root() {
 
   return (
     <>
-      <Navigation />
+      <Navigation user={user} />
 
       <MobileNavigation
         open={isSheetOpen}
         onOpenChange={() => setIsSheetOpen(false)}
+        user={user}
       />
 
       <div className="flex w-full flex-col sm:pl-[72px]">
