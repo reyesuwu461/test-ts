@@ -49,7 +49,9 @@ const defaultUser = {
   id: faker.string.uuid(),
   name: faker.person.fullName(),
   email: faker.internet.email(),
-  avatar: faker.image.avatarGitHub(),
+  // Use an internal avatar token so the app renders the emoji/tailwind colored tile
+  // instead of fetching an external GitHub avatar URL.
+  avatar: 'avatar-user',
 };
 
 const productCount = faker.number.int({ min: 75, max: 125 });

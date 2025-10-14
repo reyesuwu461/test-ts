@@ -4,7 +4,7 @@ export const mockUser: User = {
   id: "1",
   name: "Jane Doe",
   email: "jane.doe@company.com",
-  avatar: "https://avatars.githubusercontent.com/u/2245692",
+  avatar: "avatar-user",
 };
 
 export const mockSummary: Summary = { count: 104, oems: 30, value: 2943354 };
