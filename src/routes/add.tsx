@@ -1,13 +1,13 @@
 import type { ActionFunctionArgs } from "react-router-dom";
 import { Form, Link, redirect, useLoaderData, useSearchParams } from "react-router-dom";
 import {
-  createVehicle,
+  createProduct,
   getColors,
   getManufacturers,
   getModels,
   getTypes,
-  getVehicle,
-  updateVehicle,
+  getProduct,
+  updateProduct,
 } from "../api";
 import {
   Breadcrumb,
@@ -38,7 +38,7 @@ export const loader = privateLoader(async ({ request }) => {
   ]);
 
   if (id) {
-    const vehicle = await getVehicle(id);
+    const vehicle = await getProduct(id);
     return { manufacturers, models, types, colors, vehicle };
   }
 
@@ -64,12 +64,12 @@ export async function action({ request }: ActionFunctionArgs) {
   };
 
   if (id) {
-    const vehicle = await updateVehicle(id, body);
-    return redirect(`/vehicles/${vehicle.id}`);
+    const vehicle = await updateProduct(id, body);
+    return redirect(`/products/${vehicle.id}`);
   }
 
-  const vehicle = await createVehicle(body);
-  return redirect(`/vehicles/${vehicle.id}`);
+  const vehicle = await createProduct(body);
+  return redirect(`/products/${vehicle.id}`);
 }
 
 export function Component() {
@@ -88,15 +88,15 @@ export function Component() {
   return (
     <>
       <Breadcrumb className="mb-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink to="/">Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Add Vehicle</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink to="/">Home</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Add Product</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
       </Breadcrumb>
 
       <Form method="post">
@@ -104,7 +104,7 @@ export function Component() {
           <CardContent className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {/* VRM */}
             <div className="space-y-1">
-              <Label htmlFor="vrm">Registration number</Label>
+              <Label htmlFor="vrm">SKU</Label>
               <Input id="vrm" name="vrm" type="text" required defaultValue={vehicle?.vrm ?? ''} />
             </div>
 
@@ -112,7 +112,7 @@ export function Component() {
 
             {/* Manufacturer */}
             <div className="col-start-1 space-y-1">
-              <Label htmlFor="manufacturer">Manufacturer</Label>
+              <Label htmlFor="manufacturer">Brand</Label>
               <Select
                 id="manufacturer"
                 name="manufacturer"
@@ -143,7 +143,7 @@ export function Component() {
 
             {/* Type */}
             <div className="space-y-1">
-              <Label htmlFor="type">Type</Label>
+              <Label htmlFor="type">Variant</Label>
               <Select id="type" name="type" defaultValue={vehicle?.type ?? ''} required>
                 <option value="" disabled>
                   Select a type
@@ -169,21 +169,21 @@ export function Component() {
 
             {/* Fuel type */}
             <div className="space-y-1">
-              <Label htmlFor="fuel">Fuel</Label>
+              <Label htmlFor="fuel">Category</Label>
               <Select id="fuel" name="fuel" defaultValue={vehicle?.fuel ?? ''} required>
                 <option value="" disabled>
-                  Select a fuel type
+                  Select a category
                 </option>
-                <option value="Gasoline">Petrol</option>
-                <option value="Diesel">Diesel</option>
-                <option value="Hybrid">Hybrid</option>
-                <option value="Electric">Electric</option>
+                <option value="Laptop">Laptop</option>
+                <option value="Monitor">Monitor</option>
+                <option value="Peripheral">Peripheral</option>
+                <option value="Accessory">Accessory</option>
               </Select>
             </div>
 
             {/* Mileage */}
             <div className="space-y-1">
-              <Label htmlFor="mileage">Mileage</Label>
+              <Label htmlFor="mileage">Stock</Label>
               <Input
                 id="mileage"
                 name="mileage"
@@ -198,7 +198,7 @@ export function Component() {
 
             {/* Registration date */}
             <div className="space-y-1">
-              <Label htmlFor="registrationDate">Registration date</Label>
+              <Label htmlFor="registrationDate">Release date</Label>
               <Input
                 id="registrationDate"
                 name="registrationDate"
@@ -210,7 +210,7 @@ export function Component() {
 
             {/* VIN */}
             <div className="space-y-1">
-              <Label htmlFor="vin">VIN</Label>
+              <Label htmlFor="vin">Serial number</Label>
               <Input id="vin" name="vin" type="text" required defaultValue={vehicle?.vin ?? ''} />
             </div>
 

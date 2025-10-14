@@ -5,12 +5,12 @@ import type { ChartConfig } from "./chart";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./chart";
 
 export function RegistrationYearChart(props: { data: Array<Chart> }) {
-  const yearChartConfig: ChartConfig = { value: { label: "Vehicles" } };
+  const yearChartConfig: ChartConfig = { value: { label: "Products" } };
 
   return (
     <Card className="col-span-1 md:col-span-2">
-      <CardHeader>
-        <CardTitle>Registrations By Year</CardTitle>
+        <CardHeader>
+        <CardTitle>Release Year Breakdown</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={yearChartConfig} className="max-h-80 w-full">

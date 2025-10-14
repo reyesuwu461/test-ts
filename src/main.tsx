@@ -42,17 +42,17 @@ void enableMocking().then(() => {
           errorElement: <ErrorPage />,
         },
         {
-          path: "vehicles",
-          lazy: () => import("./routes/vehicles.tsx"),
+          path: "products",
+          lazy: () => import("./routes/products.tsx"),
           errorElement: <ErrorPage />,
         },
         {
-          path: "vehicles/:id",
+          path: "products/:id",
           lazy: () => import("./routes/details.tsx"),
           errorElement: <ErrorPage />,
         },
         {
-          path: "vehicles/:id/destroy",
+          path: "products/:id/destroy",
           lazy: () => import("./routes/destroy.tsx"),
           errorElement: <ErrorPage />,
         },

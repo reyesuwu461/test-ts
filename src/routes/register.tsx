@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs } from "react-router-dom";
 import { Form, redirect, useActionData, useNavigation, Link } from "react-router-dom";
 import Cookies from "js-cookie";
-import { HTTPError } from "ky";
+import axios from "axios";
 import { AlertCircle } from "lucide-react";
 import { register as apiRegister } from "../api";
 import { Alert, AlertDescription, AlertTitle } from "../components/alert";
@@ -41,8 +41,8 @@ export async function action({ request }: ActionFunctionArgs) {
   const session = await apiRegister(username, email, password, role, avatar);
     Cookies.set("token", (session as any).token);
     return redirect("/");
-  } catch (error) {
-    if (error instanceof HTTPError && error.response.status === 409) {
+  } catch (error: any) {
+    if (axios.isAxiosError(error) && error.response?.status === 409) {
       return { form: "An account with this email already exists." };
     }
     throw error;

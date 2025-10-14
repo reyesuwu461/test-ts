@@ -30,26 +30,23 @@ export function Component() {
     <div className="space-y-6">
       {/* Stats */}
       <section className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+        <Statistic label="Products in catalog" value={formatNumber(summary.count)} />
+        <Statistic label="Unique Brands" value={formatNumber(summary.oems)} />
         <Statistic
-          label="Vehicles in stock"
-          value={formatNumber(summary.count)}
-        />
-        <Statistic label="Unique OEMs" value={formatNumber(summary.oems)} />
-        <Statistic
-          label="Stock value"
+          label="Catalog value"
           value={formatCurrency(summary.value, { notation: "compact" })}
         />
       </section>
 
       {/* Charts */}
       <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {/* Top 5 OEMs */}
+        {/* Top Brands */}
         <OemChart data={oemChart} />
 
-        {/* Fuel Type Breakdown */}
+        {/* Category Breakdown */}
         <FuelChart data={fuelChart} />
 
-        {/* Registration Year Breakdown */}
+        {/* Release Year Breakdown */}
         <RegistrationYearChart data={yearChart} />
       </section>
     </div>

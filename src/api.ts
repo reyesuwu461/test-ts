@@ -1,116 +1,106 @@
-import ky from "ky";
+import axios from "axios";
 import Cookies from "js-cookie";
 import type {
   Chart,
   Session,
   Summary,
   User,
-  Vehicle,
-  VehicleFormData,
-  VehicleList,
+  Product,
+  ProductFormData,
+  ProductList,
 } from "./types";
 
-const api = ky.create({
-  prefixUrl: import.meta.env.VITE_API_URL,
-  retry: 0,
-  hooks: {
-    beforeRequest: [request => {
-      try {
-        const token = Cookies.get("token");
-        if (token) {
-          request.headers.set("Authorization", `Bearer ${token}`);
-        }
-      } catch (e) {
-        // ignore
-      }
-    }]
+const baseURL = import.meta.env.VITE_API_URL ?? "";
+
+const api = axios.create({
+  baseURL,
+  withCredentials: true,
+  headers: { "Content-Type": "application/json" },
+});
+
+// Attach token from cookie to Authorization header
+import type { AxiosRequestConfig } from "axios";
+
+api.interceptors.request.use((config: AxiosRequestConfig | any) => {
+  try {
+    const token = Cookies.get("token");
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  } catch (e) {
+    // ignore
   }
+  return config;
 });
 
 export async function login(email: string, password: string) {
-  const user: Session = await api
-    .post("/api/login", { json: { email, password } })
-    .json();
-  return user;
+  const res = await api.post(`/api/login`, { email, password });
+  return res.data as Session;
 }
 
 export async function register(username: string, email: string, password: string, role?: string, avatar?: number, adminCode?: string) {
-  const session: Session = await api
-    .post("/api/register", { json: { username, email, password, role, avatar, adminCode } })
-    .json();
-  return session;
+  const res = await api.post(`/api/register`, { username, email, password, role, avatar, adminCode });
+  return res.data as Session;
 }
 
 export async function getUser() {
-  const user: User = await api.get("/api/me").json();
-  return user;
+  const res = await api.get(`/api/me`);
+  return res.data as User;
 }
 
 export async function getSummary() {
-  const summary: Summary = await api.get("/api/summary").json();
-  return summary;
+  const res = await api.get(`/api/summary`);
+  return res.data as Summary;
 }
 
 export async function getChartData(
   type: "FUEL_TYPE" | "OEM" | "REGISTRATION_YEAR",
 ) {
-  const chartData: Array<Chart> = await api
-    .get("/api/chart", {
-      searchParams: { type },
-    })
-    .json();
-  return chartData;
+  const res = await api.get(`/api/chart`, { params: { type } });
+  return res.data as Array<Chart>;
 }
 
-export async function getVehicles(page: number, q: string) {
-  const vehicles: VehicleList = await api
-    .get("/api/vehicles", { searchParams: { page, q } })
-    .json();
-  return vehicles;
+export async function getProducts(page: number, q: string) {
+  const res = await api.get(`/api/products`, { params: { page, q } });
+  return res.data as ProductList;
 }
 
-export async function getVehicle(id: string) {
-  const vehicle: Vehicle = await api.get(`/api/vehicles/${id}`).json();
-  return vehicle;
+export async function getProduct(id: string) {
+  const res = await api.get(`/api/products/${id}`);
+  return res.data as Product;
 }
 
-export async function deleteVehicle(id: string) {
-  const result = await api.delete(`/api/vehicles/${id}`).json();
-  return result;
+export async function deleteProduct(id: string) {
+  const res = await api.delete(`/api/products/${id}`);
+  return res.data;
 }
 
 export async function getManufacturers() {
-  const manufacturers: Array<string> = await api
-    .get("/api/manufacturers")
-    .json();
-  return manufacturers;
+  const res = await api.get(`/api/manufacturers`);
+  return res.data as Array<string>;
 }
 
 export async function getModels() {
-  const models: Array<string> = await api.get("/api/models").json();
-  return models;
+  const res = await api.get(`/api/models`);
+  return res.data as Array<string>;
 }
 
 export async function getTypes() {
-  const types: Array<string> = await api.get("/api/types").json();
-  return types;
+  const res = await api.get(`/api/types`);
+  return res.data as Array<string>;
 }
 
 export async function getColors() {
-  const colors: Array<string> = await api.get("/api/colors").json();
-  return colors;
+  const res = await api.get(`/api/colors`);
+  return res.data as Array<string>;
 }
 
-export async function createVehicle(body: VehicleFormData) {
-  const vehicle: Vehicle = await api
-    .post("/api/vehicles", { json: body })
-    .json();
-  return vehicle;
+export async function createProduct(body: ProductFormData) {
+  const res = await api.post(`/api/products`, body);
+  return res.data as Product;
 }
 
-export async function updateVehicle(id: string, body: Partial<VehicleFormData>) {
-  const vehicle: Vehicle = await api
-    .patch(`/api/vehicles/${id}`, { json: body })
-    .json();
-  return vehicle;
+export async function updateProduct(id: string, body: Partial<ProductFormData>) {
+  const res = await api.patch(`/api/products/${id}`, body);
+  return res.data as Product;
 }

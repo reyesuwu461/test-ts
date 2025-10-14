@@ -52,7 +52,7 @@ test("login", async ({ page }) => {
 
   // We should end up on the home page
   await expect(
-    page.getByRole("heading", { name: "Vehicle Manager" }),
+    page.getByRole("heading", { name: "TechNova Dashboard" }),
   ).toBeVisible();
 });
 
@@ -85,7 +85,7 @@ test("logout", async ({ page, context }) => {
   await page.goto("/");
 
   await expect(
-    page.getByRole("heading", { name: "Vehicle Manager" }),
+    page.getByRole("heading", { name: "TechNova Dashboard" }),
   ).toBeVisible();
 
   // Logout

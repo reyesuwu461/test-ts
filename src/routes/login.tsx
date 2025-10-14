@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs } from "react-router-dom";
 import { Form, redirect, useActionData, useNavigation, Link } from "react-router-dom";
 import Cookies from "js-cookie";
-import { HTTPError } from "ky";
+import axios from "axios";
 import { AlertCircle } from "lucide-react";
 import { login } from "../api";
 import { Alert, AlertDescription, AlertTitle } from "../components/alert";
@@ -51,9 +51,8 @@ export async function action({ request }: ActionFunctionArgs) {
     const url = new URL(request.url);
     // Redirect
     return redirect(url.searchParams.get("to") ?? "/");
-  } catch (error) {
-    // Is this a 401 error?
-    if (error instanceof HTTPError && error.response.status === 401) {
+  } catch (error: any) {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
       return { form: "Invalid email or password." };
     }
     throw error;

@@ -11,9 +11,9 @@ test.beforeEach(async ({ page, context }) => {
   });
 });
 
-test("vehicles", async ({ page }) => {
-  // Mock out the vehicles endpoint
-  await page.route("**/api/vehicles?*", async (route) => {
+test("products", async ({ page }) => {
+  // Mock out the products endpoint
+  await page.route("**/api/products?*", async (route) => {
     await route.fulfill({
       json: {
         summary: {
@@ -22,7 +22,7 @@ test("vehicles", async ({ page }) => {
           page: 1,
           pageSize: 10,
         },
-        vehicles: [...Array(10).keys()].map((i) => ({
+        products: [...Array(10).keys()].map((i) => ({
           id: String(i),
           vrm: `VRM${i + 1}`,
           manufacturer: `Manufacturer`,
@@ -36,16 +36,16 @@ test("vehicles", async ({ page }) => {
     });
   });
 
-  await page.goto("/vehicles");
+  await page.goto("/products");
 
   await expect(
     page.getByLabel("breadcrumb").getByRole("link", { name: "Home" }),
   ).toBeVisible();
   await expect(
-    page.getByLabel("breadcrumb").getByRole("link", { name: "Vehicles" }),
+    page.getByLabel("breadcrumb").getByRole("link", { name: "Products" }),
   ).toBeVisible();
 
-  await expect(page.getByRole("heading", { name: "Inventory" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Catalog" })).toBeVisible();
   await expect(page.getByText("100")).toBeVisible();
   await expect(page.getByRole("searchbox")).toBeVisible();
 
@@ -54,22 +54,22 @@ test("vehicles", async ({ page }) => {
   // Check headers
   const headingRow = page.getByRole("row").nth(0);
   await expect(
-    headingRow.getByRole("cell", { name: "Registration" }),
+    headingRow.getByRole("cell", { name: "SKU" }),
   ).toBeVisible();
   await expect(
-    headingRow.getByRole("cell", { name: "Manufacturer", exact: true }),
+    headingRow.getByRole("cell", { name: "Brand", exact: true }),
   ).toBeVisible();
   await expect(
     headingRow.getByRole("cell", { name: "Description" }),
   ).toBeVisible();
-  await expect(headingRow.getByRole("cell", { name: "Fuel" })).toBeVisible();
+  await expect(headingRow.getByRole("cell", { name: "Category" })).toBeVisible();
   await expect(headingRow.getByRole("cell", { name: "Price" })).toBeVisible();
 
   // Check the first table row
   const firstRow = page.getByRole("row").nth(1);
   await expect(firstRow.getByRole("link", { name: "VRM1" })).toHaveAttribute(
     "href",
-    "/vehicles/0",
+    "/products/0",
   );
   await expect(
     firstRow.getByRole("cell", { name: "Manufacturer" }),
@@ -77,17 +77,17 @@ test("vehicles", async ({ page }) => {
   await expect(
     firstRow.getByRole("cell", { name: "Model Type" }),
   ).toBeVisible();
-  await expect(firstRow.getByRole("cell", { name: "Petrol" })).toBeVisible();
+  await expect(firstRow.getByRole("cell", { name: "Gasoline" })).toBeVisible();
   await expect(firstRow.getByRole("cell", { name: "£29,999" })).toBeVisible();
 
-  // Paginsation should be visible
+  // Pagination should be visible
   await expect(page.getByText("Page 1 of 10")).toBeVisible();
   await expect(page.getByRole("button", { name: "Prev" })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Next" })).toBeEnabled();
 });
 
 test("no results", async ({ page }) => {
-  await page.route("**/api/vehicles?*", async (route) => {
+  await page.route("**/api/products?*", async (route) => {
     await route.fulfill({
       json: {
         summary: {
@@ -96,12 +96,12 @@ test("no results", async ({ page }) => {
           page: 1,
           pageSize: 10,
         },
-        vehicles: [],
+        products: [],
       },
     });
   });
 
-  await page.goto("/vehicles");
+  await page.goto("/products");
 
   await expect(
     page.getByRole("heading", { name: "No results found" }),
@@ -113,7 +113,7 @@ test("no results", async ({ page }) => {
 });
 
 test("no pagination", async ({ page }) => {
-  await page.route("**/api/vehicles?*", async (route) => {
+  await page.route("**/api/products?*", async (route) => {
     await route.fulfill({
       json: {
         summary: {
@@ -122,7 +122,7 @@ test("no pagination", async ({ page }) => {
           page: 1,
           pageSize: 10,
         },
-        vehicles: [
+        products: [
           {
             id: "1",
             vrm: "VRM1",
@@ -138,16 +138,16 @@ test("no pagination", async ({ page }) => {
     });
   });
 
-  await page.goto("/vehicles");
+  await page.goto("/products");
   await expect(page.getByRole("table").getByRole("row")).toHaveCount(2);
-  // No paginsation
+  // No pagination
   await expect(
     page.getByRole("navigation", { name: "Pagination" }),
   ).not.toBeVisible();
 });
 
 test("last page", async ({ page }) => {
-  await page.route("**/api/vehicles?*", async (route) => {
+  await page.route("**/api/products?*", async (route) => {
     await route.fulfill({
       json: {
         summary: {
@@ -156,7 +156,7 @@ test("last page", async ({ page }) => {
           page: 3,
           pageSize: 10,
         },
-        vehicles: [
+        products: [
           {
             id: "1",
             vrm: "VRM1",
@@ -172,7 +172,7 @@ test("last page", async ({ page }) => {
     });
   });
 
-  await page.goto("/vehicles");
+  await page.goto("/products");
 
   await expect(page.getByText("Page 3 of 3")).toBeVisible();
   await expect(page.getByRole("button", { name: "Prev" })).toBeEnabled();
@@ -180,7 +180,7 @@ test("last page", async ({ page }) => {
 });
 
 test("search", async ({ page }) => {
-  await page.route("**/api/vehicles?*", async (route) => {
+  await page.route("**/api/products?*", async (route) => {
     await route.fulfill({
       json: {
         summary: {
@@ -189,7 +189,7 @@ test("search", async ({ page }) => {
           page: 1,
           pageSize: 10,
         },
-        vehicles: [
+        products: [
           {
             id: "1",
             vrm: "VRM1",
@@ -205,11 +205,11 @@ test("search", async ({ page }) => {
     });
   });
 
-  await page.goto("/vehicles");
+  await page.goto("/products");
 
   await page.getByRole("searchbox").fill("test");
   await page.keyboard.press("Enter");
 
   // Check the URL
-  await expect(page).toHaveURL("/vehicles?q=test&page=1");
+  await expect(page).toHaveURL("/products?q=test&page=1");
 });

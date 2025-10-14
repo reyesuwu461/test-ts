@@ -1,6 +1,6 @@
-export const fuelLabels: Record<string, string> = {
-  Gasoline: "Petrol",
-  Diesel: "Diesel",
-  Hybrid: "Hybrid",
-  Electric: "Electric",
+export const categoryLabels: Record<string, string> = {
+  Laptop: "Laptop",
+  Monitor: "Monitor",
+  Peripheral: "Peripheral",
+  Accessory: "Accessory",
 };

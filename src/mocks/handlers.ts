@@ -6,9 +6,9 @@ import type {
   Session,
   Summary,
   User,
-  Vehicle,
-  VehicleFormData,
-  VehicleList,
+  Product,
+  ProductFormData,
+  ProductList,
 } from "../types";
 
 // In-memory users store with roles
@@ -24,7 +24,7 @@ interface MockUser {
 
 // Admin creation code (used by the register handler). It preferes the Vite env var
 // VITE_ADMIN_CODE but falls back to the example secret so it's easy to test locally.
-const adminCode = import.meta.env.VITE_ADMIN_CODE ?? 'changeme_admin_code';
+const adminCode = import.meta.env.VITE_ADMIN_CODE ?? 'changeme_admin_code'; 
 
 const users: MockUser[] = [
   {
@@ -32,7 +32,7 @@ const users: MockUser[] = [
     name: 'Admin Rolos',
     email: 'admin@example.com',
     password: 'adminpass', /**  'changeme_admin_code' */
-    avatar: undefined,
+    avatar: 'avatar-admin',
     role: 'rolos admir',
   },
   {
@@ -40,7 +40,7 @@ const users: MockUser[] = [
     name: 'Regular User',
     email: 'user@example.com',
     password: 'userpass',
-    avatar: undefined,
+    avatar: 'avatar-user',
     role: 'user',
   },
 ];
@@ -52,21 +52,30 @@ const defaultUser = {
   avatar: faker.image.avatarGitHub(),
 };
 
-const vehicleCount = faker.number.int({ min: 75, max: 125 });
+const productCount = faker.number.int({ min: 75, max: 125 });
 
-// Generate vehicle mocks
-let vehicles: Array<Vehicle> = [...Array(vehicleCount).keys()].map(() => ({
+// Generate product mocks (TechNova catalog)
+const categories = ["Laptop", "Monitor", "Peripheral", "Accessory"];
+let products: Array<Product> = [...Array(productCount).keys()].map(() => ({
   id: faker.string.uuid(),
-  vrm: faker.vehicle.vrm(),
-  manufacturer: faker.vehicle.manufacturer(),
-  model: faker.vehicle.model(),
-  type: faker.vehicle.type(),
-  fuel: faker.vehicle.fuel(),
-  color: faker.vehicle.color(),
-  vin: faker.vehicle.vin(),
-  mileage: faker.number.int({ min: 1000, max: 25000 }),
-  registrationDate: faker.date.past({ years: 10 }).toISOString().split("T")[0],
-  price: faker.commerce.price({ min: 2000, max: 50000 }),
+  // SKU-like code
+  vrm: faker.string.alphanumeric(8),
+  // brand
+  manufacturer: faker.company.name(),
+  // product name/model
+  model: faker.commerce.productName(),
+  // variant or type
+  type: faker.commerce.productMaterial(),
+  // category (maps to previous 'fuel')
+  fuel: faker.helpers.arrayElement(categories),
+  color: faker.color.human(),
+  // serial number
+  vin: faker.string.alphanumeric(12),
+  // stock quantity
+  mileage: faker.number.int({ min: 0, max: 500 }),
+  // release date
+  registrationDate: faker.date.past({ years: 5 }).toISOString().split("T")[0],
+  price: faker.commerce.price({ min: 50, max: 5000 }),
   // Assign ownerId randomly among existing users (admin or regular)
   ownerId: users[faker.number.int({ min: 0, max: users.length - 1 })].id,
 }));
@@ -171,12 +180,9 @@ export const handlers = [
       await delay(DELAY);
 
       return HttpResponse.json({
-        count: vehicles.length,
-        oems: new Set(vehicles.map((vehicle) => vehicle.manufacturer)).size,
-        value: vehicles.reduce(
-          (total, vehicle) => total + Number(vehicle.price),
-          0,
-        ),
+        count: products.length,
+        oems: new Set(products.map((p) => p.manufacturer)).size,
+        value: products.reduce((total, p) => total + Number(p.price), 0),
       });
     },
   ),
@@ -190,36 +196,22 @@ export const handlers = [
       const type = url.searchParams.get("type");
 
       if (type === "FUEL_TYPE") {
-        return HttpResponse.json([
-          {
-            key: "petrol",
-            value: vehicles.filter((v) => v.fuel === "Gasoline").length,
-          },
-          {
-            key: "diesel",
-            value: vehicles.filter((v) => v.fuel === "Diesel").length,
-          },
-          {
-            key: "hybrid",
-            value: vehicles.filter((v) => v.fuel === "Hybrid").length,
-          },
-          {
-            key: "electric",
-            value: vehicles.filter((v) => v.fuel === "Electric").length,
-          },
-        ]);
+        // Return category distribution (uses same type key for compatibility)
+        return HttpResponse.json(
+          categories.map((c) => ({ key: c.toLowerCase(), value: products.filter((v) => v.fuel === c).length }))
+        );
       }
 
       if (type === "OEM") {
         // Build a list of unique manufacturers
         const oems: Record<string, number> = {};
 
-        for (let i = 0; i < vehicles.length; i++) {
-          const vehicle = vehicles[i];
-          if (typeof oems[vehicle.manufacturer] === "undefined") {
-            oems[vehicle.manufacturer] = 1;
+        for (let i = 0; i < products.length; i++) {
+          const p = products[i];
+          if (typeof oems[p.manufacturer] === "undefined") {
+            oems[p.manufacturer] = 1;
           } else {
-            oems[vehicle.manufacturer]++;
+            oems[p.manufacturer]++;
           }
         }
 
@@ -234,7 +226,7 @@ export const handlers = [
       if (type === "REGISTRATION_YEAR") {
         // Find the earliest year
         const minYear = Math.min(
-          ...vehicles.map((v) => new Date(v.registrationDate).getFullYear()),
+          ...products.map((v) => new Date(v.registrationDate).getFullYear()),
         );
 
         // Create a map of year > count
@@ -244,10 +236,10 @@ export const handlers = [
           years[i] = 0;
         }
 
-        // Count the number of vehicles per year
-        for (let i = 0; i < vehicles.length; i++) {
-          const vehicle = vehicles[i];
-          const year = new Date(vehicle.registrationDate).getFullYear();
+        // Count the number of products per year
+        for (let i = 0; i < products.length; i++) {
+          const p = products[i];
+          const year = new Date(p.registrationDate).getFullYear();
           if (typeof years[year] === "undefined") {
             years[year] = 1;
           } else {
@@ -266,8 +258,8 @@ export const handlers = [
     },
   ),
 
-  http.get<PathParams, DefaultBodyType, VehicleList>(
-    `${import.meta.env.VITE_API_URL}/api/vehicles`,
+  http.get<PathParams, DefaultBodyType, ProductList>(
+    `${import.meta.env.VITE_API_URL}/api/products`,
     async ({ request }) => {
       await delay(DELAY);
 
@@ -279,22 +271,21 @@ export const handlers = [
       const q = url.searchParams.get("q");
 
       // Filter the results
-      const filtered = vehicles.filter((vehicle) => {
+      const filtered = products.filter((product) => {
         if (q) {
-          if (vehicle.manufacturer.toLowerCase().includes(q.toLowerCase())) {
+          if (product.manufacturer.toLowerCase().includes(q.toLowerCase())) {
             return true;
           }
-          if (vehicle.model.toLowerCase().includes(q.toLowerCase())) {
+          if (product.model.toLowerCase().includes(q.toLowerCase())) {
             return true;
           }
-          if (vehicle.type.toLowerCase().includes(q.toLowerCase())) {
+          if (product.type.toLowerCase().includes(q.toLowerCase())) {
             return true;
           }
           return false;
         }
         return true;
       });
-
       return HttpResponse.json({
         summary: {
           total: filtered.length,
@@ -302,35 +293,35 @@ export const handlers = [
           page,
           pageSize,
         },
-        vehicles: filtered.slice(start, end).map((vehicle) => ({
-          id: vehicle.id,
-          vrm: vehicle.vrm,
-          manufacturer: vehicle.manufacturer,
-          model: vehicle.model,
-          type: vehicle.type,
-          color: vehicle.color,
-          fuel: vehicle.fuel,
-          price: vehicle.price,
+        products: filtered.slice(start, end).map((product) => ({
+          id: product.id,
+          vrm: product.vrm,
+          manufacturer: product.manufacturer,
+          model: product.model,
+          type: product.type,
+          color: product.color,
+          fuel: product.fuel,
+          price: product.price,
         })),
       });
     },
   ),
 
-  http.get<PathParams, DefaultBodyType, Vehicle>(
-    `${import.meta.env.VITE_API_URL}/api/vehicles/:id`,
+  http.get<PathParams, DefaultBodyType, Product>(
+    `${import.meta.env.VITE_API_URL}/api/products/:id`,
     async ({ params }) => {
       await delay(DELAY);
 
-      const vehicle = vehicles.find((v) => v.id === params.id);
-      if (vehicle === undefined) {
+      const product = products.find((v) => v.id === params.id);
+      if (product === undefined) {
         return new HttpResponse(null, { status: 404 }) as StrictResponse<never>;
       }
-      return HttpResponse.json(vehicle);
+      return HttpResponse.json(product);
     },
   ),
 
   http.delete(
-    `${import.meta.env.VITE_API_URL}/api/vehicles/:id`,
+    `${import.meta.env.VITE_API_URL}/api/products/:id`,
     async ({ request, params }) => {
       await delay(DELAY);
 
@@ -348,25 +339,25 @@ export const handlers = [
         return new HttpResponse(null, { status: 401 }) as StrictResponse<never>;
       }
 
-      // Only allow admin users to delete vehicles they own
-      const vehicle = vehicles.find((v) => v.id === params.id);
-      if (!vehicle) {
+      // Only allow admin users to delete products they own
+      const product = products.find((v) => v.id === params.id);
+      if (!product) {
         return new HttpResponse(null, { status: 404 }) as StrictResponse<never>;
       }
 
-      if (acting.role !== 'rolos admir' || vehicle.ownerId !== acting.id) {
+      if (acting.role !== 'rolos admir' || product.ownerId !== acting.id) {
         return new HttpResponse(null, { status: 403 }) as StrictResponse<never>;
       }
 
-      // Remove the vehicle from the array
-      vehicles = vehicles.filter((v) => v.id !== params.id);
+      // Remove the product from the array
+      products = products.filter((v) => v.id !== params.id);
 
       return HttpResponse.json({});
     },
   ),
 
   http.patch(
-    `${import.meta.env.VITE_API_URL}/api/vehicles/:id`,
+    `${import.meta.env.VITE_API_URL}/api/products/:id`,
     async ({ request, params }) => {
       await delay(DELAY);
 
@@ -384,13 +375,13 @@ export const handlers = [
         return new HttpResponse(null, { status: 401 }) as StrictResponse<never>;
       }
 
-      const vehicle = vehicles.find((v) => v.id === params.id);
-      if (!vehicle) {
+      const product = products.find((v) => v.id === params.id);
+      if (!product) {
         return new HttpResponse(null, { status: 404 }) as StrictResponse<never>;
       }
 
       // Only admin owners can edit
-      if (acting.role !== 'rolos admir' || vehicle.ownerId !== acting.id) {
+      if (acting.role !== 'rolos admir' || product.ownerId !== acting.id) {
         return new HttpResponse(null, { status: 403 }) as StrictResponse<never>;
       }
 
@@ -399,12 +390,12 @@ export const handlers = [
       const allowed = ['vrm', 'manufacturer', 'model', 'type', 'fuel', 'color', 'price', 'mileage', 'registrationDate', 'vin'];
       for (const key of Object.keys(body)) {
         if (allowed.includes(key)) {
-          // assign dynamically; body and vehicle are untyped here
-          (vehicle as any)[key] = (body as any)[key];
+          // assign dynamically; body and product are untyped here
+          (product as any)[key] = (body as any)[key];
         }
       }
 
-      return HttpResponse.json(vehicle);
+      return HttpResponse.json(product);
     },
   ),
 
@@ -415,7 +406,7 @@ export const handlers = [
 
       // Build a set of manufacturers
       const manufacturers = new Set(
-        vehicles.map((vehicle) => vehicle.manufacturer),
+        products.map((vehicle) => vehicle.manufacturer),
       );
 
       return HttpResponse.json(
@@ -429,8 +420,8 @@ export const handlers = [
     async () => {
       await delay(DELAY);
 
-      // Build a set of manufacturers
-      const models = new Set(vehicles.map((vehicle) => vehicle.model));
+  // Build a set of models
+  const models = new Set(products.map((vehicle) => vehicle.model));
 
       return HttpResponse.json([...models].sort((a, b) => a.localeCompare(b)));
     },
@@ -441,8 +432,8 @@ export const handlers = [
     async () => {
       await delay(DELAY);
 
-      // Build a set of manufacturers
-      const types = new Set(vehicles.map((vehicle) => vehicle.type));
+  // Build a set of types
+  const types = new Set(products.map((vehicle) => vehicle.type));
 
       return HttpResponse.json([...types].sort((a, b) => a.localeCompare(b)));
     },
@@ -453,15 +444,15 @@ export const handlers = [
     async () => {
       await delay(DELAY);
 
-      // Build a set of manufacturers
-      const colors = new Set(vehicles.map((vehicle) => vehicle.color));
+  // Build a set of colors
+  const colors = new Set(products.map((vehicle) => vehicle.color));
 
       return HttpResponse.json([...colors].sort((a, b) => a.localeCompare(b)));
     },
   ),
 
-  http.post<PathParams, VehicleFormData, Vehicle>(
-    `${import.meta.env.VITE_API_URL}/api/vehicles`,
+  http.post<PathParams, ProductFormData, Product>(
+    `${import.meta.env.VITE_API_URL}/api/products`,
     async ({ request }) => {
       await delay(DELAY);
 
@@ -475,11 +466,11 @@ export const handlers = [
         return new HttpResponse(null, { status: 401 }) as StrictResponse<never>;
       }
 
-      const vehicle: Vehicle = { ...body, id: faker.string.uuid(), ownerId };
+      const product: Product = { ...body, id: faker.string.uuid(), ownerId };
       // Add to the array
-      vehicles.push(vehicle);
-      // Return the new vehicle
-      return HttpResponse.json(vehicle);
+      products.push(product);
+      // Return the new product
+      return HttpResponse.json(product);
     },
   ),
 ];

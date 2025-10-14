@@ -24,39 +24,39 @@ export interface Summary {
   value: number;
 }
 
-export interface Vehicle {
+export interface Product {
   id: string;
-  vrm: string;
-  manufacturer: string;
+  vrm: string; // SKU-like identifier
+  manufacturer: string; // brand
   model: string;
-  type: string;
-  fuel: string;
+  type: string; // variant
+  fuel: string; // category (kept name for compatibility)
   color: string;
-  vin: string;
-  mileage: number;
-  registrationDate: string;
+  vin: string; // serial number
+  mileage: number; // stock quantity
+  registrationDate: string; // release date
   price: string;
   // user id of the creator/owner (optional in fixtures)
   ownerId?: string;
 }
 
-export type VehicleFormData = Omit<Vehicle, "id">;
+export type ProductFormData = Omit<Product, "id">;
 
 export interface Chart {
   key: string;
   value: number;
 }
 
-export interface VehicleList {
+export interface ProductList {
   summary: {
     total: number;
     totalPages: number;
     page: number;
     pageSize: number;
   };
-  vehicles: Array<
+  products: Array<
     Pick<
-      Vehicle,
+      Product,
       | "id"
       | "vrm"
       | "manufacturer"

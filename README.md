@@ -6,9 +6,9 @@ Name: Samuel Reyes Castro
 Contact: https://github.com/reyesuwu461
 
 
-# vite-spa
+# TechNova Dashboard
 
-Lightweight single-page app built with Vite, React, and React Router 6. Useful as a demo or starter for a small dashboard-style SPA. Includes a mocked API (MSW) for local development, Storybook stories, and Playwright tests.
+TechNova is a demo single-page app for a tech retailer (laptops, monitors, peripherals and accessories). Built with Vite, React and React Router 6. Includes a mocked API (MSW) for local development, Storybook stories and Playwright tests.
 
 Table of Contents
 
@@ -23,7 +23,7 @@ Project structure
 
 - `index.html` — app entry
 - `src/main.tsx` — app bootstrap and router
-- `src/routes/` — route components (login, register, vehicles, etc.)
+- `src/routes/` — route components (login, register, products, etc.)
 - `src/components/` — reusable UI components
 - `src/mocks/` — MSW handlers & setup used in dev
 - `public/` — static assets (mock service worker)
@@ -57,6 +57,34 @@ VITE_MSW=true npm run dev
 ```
 
 Open http://localhost:5173 in your browser.
+
+Serve production build with Express
+
+After running a production build, an Express server is provided at `server/index.js` to serve the `dist` folder.
+
+Build and run (recommended for production-like testing):
+
+```bash
+# install deps (if not already)
+npm install
+
+# build the app and start the Express server
+npm run start
+
+# or if you already built, run just the server
+npm run preview
+```
+
+The server listens by default on port 5173. To change it, set `PORT`:
+
+```bash
+PORT=8080 npm run preview
+```
+
+Notes
+
+- The project keeps using Vite for development (HMR, dev tooling) and for creating production builds. Express is used only to serve the built static files. This keeps the fast dev experience while providing a simple production server.
+- If you want, I can add gzip compression, security headers (helmet), a Dockerfile, or a PM2 service file for production deployment — dime cuál quieres y lo añado.
 
 Development notes
 

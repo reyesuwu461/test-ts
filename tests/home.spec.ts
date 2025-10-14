@@ -37,7 +37,7 @@ test("home", async ({ page }) => {
   await page.goto("/");
 
   await expect(
-    page.getByRole("heading", { name: "Vehicle Manager" }),
+    page.getByRole("heading", { name: "TechNova Dashboard" }),
   ).toBeVisible();
 
   // Side nax links
@@ -45,23 +45,23 @@ test("home", async ({ page }) => {
     "href",
     "/",
   );
-  await expect(page.getByRole("link", { name: "Vehicles" })).toHaveAttribute(
+  await expect(page.getByRole("link", { name: "Products" })).toHaveAttribute(
     "href",
-    "/vehicles",
+    "/products",
   );
-  await expect(page.getByRole("link", { name: "Add vehicle" })).toHaveAttribute(
+  await expect(page.getByRole("link", { name: "Add product" })).toHaveAttribute(
     "href",
     "/add",
   );
 
   // Statistics
-  await expect(page.getByText("Vehicles in stock")).toBeVisible();
+  await expect(page.getByText("Products in catalog")).toBeVisible();
   await expect(page.getByRole("heading", { name: "104" })).toBeVisible();
 
-  await expect(page.getByText("Unique OEMs")).toBeVisible();
+  await expect(page.getByText("Unique Brands")).toBeVisible();
   await expect(page.getByRole("heading", { name: "30" })).toBeVisible();
 
-  await expect(page.getByText("Stock value")).toBeVisible();
+  await expect(page.getByText("Catalog value")).toBeVisible();
   await expect(page.getByRole("heading", { name: "£2.9M" })).toBeVisible();
 
   // Charts
@@ -73,15 +73,15 @@ test("home", async ({ page }) => {
   await expect(page.getByText("BMW")).toBeVisible();
 
   await expect(
-    page.getByRole("heading", { name: "Fuel Type Breakdown" }),
+    page.getByRole("heading", { name: "Category Breakdown" }),
   ).toBeVisible();
-  await expect(page.getByText("Petrol")).toBeVisible();
-  await expect(page.getByText("Diesel")).toBeVisible();
-  await expect(page.getByText("Hybrid")).toBeVisible();
-  await expect(page.getByText("Electric")).toBeVisible();
+  await expect(page.getByText("Laptop")).toBeVisible();
+  await expect(page.getByText("Monitor")).toBeVisible();
+  await expect(page.getByText("Peripheral")).toBeVisible();
+  await expect(page.getByText("Accessory")).toBeVisible();
 
   await expect(
-    page.getByRole("heading", { name: "Registrations By Year" }),
+    page.getByRole("heading", { name: "Release Year Breakdown" }),
   ).toBeVisible();
   await expect(page.getByText("2014")).toBeVisible();
   await expect(page.getByText("2024")).toBeVisible();

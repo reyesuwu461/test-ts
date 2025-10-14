@@ -22,13 +22,13 @@ test.beforeEach(async ({ page, context }) => {
 });
 
 test("add", async ({ page }) => {
-  await page.route("**/api/vehicles", async (route) => {
+  await page.route("**/api/products", async (route) => {
     if (route.request().method() === "POST") {
       await route.fulfill({ json: { id: "1" } });
     }
   });
 
-  await page.route("**/api/vehicles/1", async (route) => {
+  await page.route("**/api/products/1", async (route) => {
     await route.fulfill({
       json: {
         id: "1",
@@ -49,20 +49,20 @@ test("add", async ({ page }) => {
   await page.goto("/add");
 
   // Complete the form
-  await page.getByLabel("Registration number").fill("AB72 XYZ");
-  await page.getByLabel("Manufacturer").selectOption("Ford");
+  await page.getByLabel("SKU").fill("AB72 XYZ");
+  await page.getByLabel("Brand").selectOption("Ford");
   await page.getByLabel("Model").selectOption("Focus");
-  await page.getByLabel("Type").selectOption("Saloon");
+  await page.getByLabel("Variant").selectOption("Saloon");
   await page.getByLabel("Colour").selectOption("Black");
-  await page.getByLabel("Fuel").selectOption("Petrol");
-  await page.getByLabel("Mileage").fill("10000");
-  await page.getByLabel("Registration date").fill("2024-03-01");
-  await page.getByLabel("VIN").fill("XYZ");
+  await page.getByLabel("Category").selectOption("Laptop");
+  await page.getByLabel("Stock").fill("10000");
+  await page.getByLabel("Release date").fill("2024-03-01");
+  await page.getByLabel("Serial number").fill("XYZ");
   await page.getByLabel("Price").fill("19999");
 
   await page.getByRole("button", { name: "Add" }).click();
 
-  // Vehicle details page should load
-  await expect(page).toHaveURL("/vehicles/1");
+  // Product details page should load
+  await expect(page).toHaveURL("/products/1");
   await expect(page.getByRole("heading", { name: "AB72 XYZ" })).toBeVisible();
 });

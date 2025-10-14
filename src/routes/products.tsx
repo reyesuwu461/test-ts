@@ -1,7 +1,8 @@
+// Products listing route (previously Vehicles) - main implementation follows.
 import * as React from "react";
 import { Link, useLoaderData, useSearchParams } from "react-router-dom";
 import { Info, Search } from "lucide-react";
-import { getVehicles } from "../api";
+import { getProducts } from "../api";
 import { Badge } from "../components/badge";
 import {
   Breadcrumb,
@@ -33,20 +34,20 @@ import {
 } from "../components/table";
 import { getWebColor } from "../lib/color";
 import { formatCurrency } from "../lib/intl";
-import { fuelLabels } from "../lib/labels";
+import { categoryLabels } from "../lib/labels";
 import { privateLoader } from "../lib/private-loader";
-import type { VehicleList } from "../types";
+import type { ProductList } from "../types";
 
 export const loader = privateLoader(async ({ request }) => {
   const url = new URL(request.url);
   const page = Number(url.searchParams.get("page") || "1");
   const q = url.searchParams.get("q") || "";
-  const vehicles = await getVehicles(page, q);
-  return vehicles;
+  const products = await getProducts(page, q);
+  return products;
 });
 
 export function Component() {
-  const { summary, vehicles } = useLoaderData() as VehicleList;
+  const { summary, products } = useLoaderData() as ProductList;
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = React.useState(searchParams.get("q") || "");
 
@@ -66,7 +67,7 @@ export function Component() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Vehicles</BreadcrumbPage>
+            <BreadcrumbPage>Products</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -74,7 +75,7 @@ export function Component() {
       <Card>
         <div className="flex flex-wrap items-center gap-4 p-4">
           <div className="flex grow gap-2">
-            <h2 className="text-xl font-semibold">Inventory</h2>
+            <h2 className="text-xl font-semibold">Catalog</h2>
             <Badge variant="default">{summary.total}</Badge>
           </div>
 
@@ -93,8 +94,8 @@ export function Component() {
               className="rounded-full pl-10 [&::-webkit-search-cancel-button]:hidden"
               type="search"
               name="q"
-              placeholder="Search"
-              aria-label="Search inventory"
+              placeholder="Search products"
+              aria-label="Search catalog"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -121,11 +122,11 @@ export function Component() {
             <Table className="table-auto sm:table-fixed">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-auto lg:w-32">Registration</TableHead>
-                  <TableHead className="w-auto lg:w-60">Manufacturer</TableHead>
+                  <TableHead className="w-auto lg:w-32">SKU</TableHead>
+                  <TableHead className="w-auto lg:w-60">Brand</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead className="w-auto text-right lg:w-32">
-                    Fuel
+                    Category
                   </TableHead>
                   <TableHead className="w-auto text-right lg:w-32">
                     Price
@@ -133,35 +134,35 @@ export function Component() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {vehicles.map((vehicle) => (
-                  <TableRow key={vehicle.id}>
+                {products.map((product) => (
+                  <TableRow key={product.id}>
                     <TableCell>
                       <Link
-                        to={`/vehicles/${vehicle.id}`}
+                        to={`/products/${product.id}`}
                         className="text-primary underline-offset-4 hover:underline"
                       >
-                        {vehicle.vrm}
+                        {product.vrm}
                       </Link>
                     </TableCell>
-                    <TableCell>{vehicle.manufacturer}</TableCell>
+                    <TableCell>{product.manufacturer}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
                         <div
                           className="size-5 shrink-0 rounded-full border"
                           style={{
-                            backgroundColor: getWebColor(vehicle.color),
+                            backgroundColor: getWebColor(product.color),
                           }}
                         />
-                        <span>{`${vehicle.model} ${vehicle.type}`}</span>
+                        <span>{`${product.model} ${product.type}`}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <Badge variant="secondary">
-                        {fuelLabels[vehicle.fuel]}
+                        {categoryLabels[product.fuel]}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      {formatCurrency(parseInt(vehicle.price, 10), {
+                      {formatCurrency(parseInt(product.price, 10), {
                         maximumFractionDigits: 0,
                       })}
                     </TableCell>
@@ -205,4 +206,4 @@ export function Component() {
     </>
   );
 }
-Component.displayName = "Vehicles";
+Component.displayName = "Products";

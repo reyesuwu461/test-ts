@@ -7,7 +7,7 @@ import {
   useLoaderData,
   useMatch,
 } from "react-router-dom";
-import { Car, CirclePlus, House, Menu } from "lucide-react";
+import { Monitor, CirclePlus, House, Menu } from "lucide-react";
 import { getUser } from "../api";
 import { Button } from "../components/button";
 import { ModeToggle } from "../components/mode-toggle";
@@ -68,9 +68,9 @@ function Navigation({ user }: { user?: User }) {
       <TooltipProvider>
         <nav className="flex flex-col gap-4 p-4">
           <NavigationItem to="/" icon={House} label="Home" />
-          <NavigationItem to="/vehicles" icon={Car} label="Vehicles" />
+          <NavigationItem to="/products" icon={Monitor} label="Products" />
           {user?.role === "rolos admir" && (
-            <NavigationItem to="/add" icon={CirclePlus} label="Add Vehicle" />
+            <NavigationItem to="/add" icon={CirclePlus} label="Add Product" />
           )}
         </nav>
       </TooltipProvider>
@@ -134,10 +134,10 @@ function MobileNavigation(props: {
             label="Home"
           />
           <MobileNavigationItem
-            to="/vehicles"
+            to="/products"
             onClick={props.onOpenChange}
-            icon={Car}
-            label="Vehicles"
+            icon={Monitor}
+            label="Products"
           />
           {props.user?.role === "rolos admir" && (
             <MobileNavigationItem
@@ -181,7 +181,7 @@ export function Root() {
               <Menu />
             </Button>
 
-            <h1 className="grow text-lg font-medium">Vehicle Manager</h1>
+            <h1 className="grow text-lg font-medium">TechNova Dashboard</h1>
 
             <ModeToggle />
             <UserAvatar user={user} />
