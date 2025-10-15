@@ -159,7 +159,7 @@ app.post('/api/login', (req, res) => {
     return res.json({ token: 'dev-token', user: { id: '1', name: 'Admin', email, role: 'rolos admir' } });
   }
   if (email && password) {
-    return res.json({ token: 'dev-token', user: { id: '2', name: 'User', email, role: 'user' } });
+    return res.json({ token: 'dev-token', user: { id: '2', name: 'User', email, role: '$' } });
   }
   res.status(401).json({ error: 'Invalid credentials' });
 });
@@ -171,7 +171,7 @@ app.post('/api/register', (req, res) => {
   if (inMemoryProducts.find(p => p.ownerId === email)) {
     return res.status(409).json({ error: 'exists' });
   }
-  return res.status(201).json({ token: 'dev-token', user: { id: String(Date.now()), name: username, email, role: 'user' } });
+  return res.status(201).json({ token: 'dev-token', user: { id: String(Date.now()), name: username, email, role: '$' } });
 });
 
 // Serve static assets from dist

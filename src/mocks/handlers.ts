@@ -12,7 +12,7 @@ import type {
 } from "../types";
 
 // In-memory users store with roles
-type Role = 'rolos admir' | 'user';
+type Role = 'rolos admir' | '$';
 interface MockUser {
   id: string;
   name: string;
@@ -41,7 +41,7 @@ const users: MockUser[] = [
     email: 'user@example.com',
     password: 'userpass',
     avatar: 'avatar-user',
-    role: 'user',
+    role: '$',
   },
 ];
 
@@ -49,9 +49,8 @@ const defaultUser = {
   id: faker.string.uuid(),
   name: faker.person.fullName(),
   email: faker.internet.email(),
-  // Use an internal avatar token so the app renders the emoji/tailwind colored tile
-  // instead of fetching an external GitHub avatar URL.
   avatar: 'avatar-user',
+  role: '$' as Role,
 };
 
 const productCount = faker.number.int({ min: 75, max: 125 });
@@ -146,7 +145,7 @@ export const handlers = [
       }
 
       // Map role and avatar defaults
-      const role: Role = body.role === 'rolos admir' ? 'rolos admir' : 'user';
+  const role: Role = body.role === 'rolos admir' ? 'rolos admir' : '$';
       // If role is admin, require adminCode to match env var/fallback
       if (role === 'rolos admir') {
         const adminCodeFromBody = body.adminCode as string | undefined;
@@ -158,7 +157,7 @@ export const handlers = [
       const avatarIndex: number | undefined = typeof body.avatar === 'number' ? body.avatar : undefined;
 
       // Simple avatar assignment: admin gets avatar 1, user avatar 0 if none provided
-      const avatar = avatarIndex !== undefined ? `avatar-${avatarIndex}` : role === 'rolos admir' ? 'avatar-admin' : 'avatar-user';
+  const avatar = avatarIndex !== undefined ? `avatar-${avatarIndex}` : role === 'rolos admir' ? 'avatar-admin' : 'avatar-user';
 
       const newUser: MockUser = {
         id: faker.string.uuid(),

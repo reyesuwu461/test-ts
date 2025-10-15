@@ -1,4 +1,4 @@
-export type Role = 'rolos admir' | 'user';
+export type Role = 'rolos admir' | '$';
 
 export interface Session {
   token: string;
