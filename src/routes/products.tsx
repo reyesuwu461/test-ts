@@ -146,7 +146,9 @@ export function Component() {
                   <TableHead className="w-auto text-right lg:w-32">
                     Price
                   </TableHead>
-                  <TableHead className="w-auto text-right lg:w-32">Options</TableHead>
+                  {currentUser?.role === "rolos admir" && (
+                    <TableHead className="w-auto text-right lg:w-32">Options</TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -182,9 +184,8 @@ export function Component() {
                         maximumFractionDigits: 0,
                       })}
                     </TableCell>
-                    <TableCell className="text-right">
-                      {/* Show Edit/Delete when user is admin (ownerId not available in list response) */}
-                      {currentUser?.role === "rolos admir" && (
+                    {currentUser?.role === "rolos admir" && (
+                      <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Link to={`/add?id=${product.id}`}>
                             <Button size="sm">Edit</Button>
@@ -206,8 +207,8 @@ export function Component() {
                             Delete
                           </Button>
                         </div>
-                      )}
-                    </TableCell>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
