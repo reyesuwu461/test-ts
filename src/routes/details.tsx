@@ -152,7 +152,7 @@ export function Component() {
           </dl>
         </CardContent>
         <CardFooter className="flex gap-2">
-          {(currentUser?.role === "rolos admir" || currentUser?.id === vehicle.ownerId) && (
+          {currentUser?.role === "rolos admir" && (
             <>
               <Link to={`/add?id=${vehicle.id}`}>
                 <Button>Edit</Button>
