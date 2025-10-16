@@ -340,13 +340,14 @@ export const handlers = [
         return new HttpResponse(null, { status: 401 }) as StrictResponse<never>;
       }
 
-      // Only allow admin users to delete products they own
+      // Allow admin users to delete any product, or owners to delete their own
       const product = products.find((v) => v.id === params.id);
       if (!product) {
         return new HttpResponse(null, { status: 404 }) as StrictResponse<never>;
       }
 
-      if (acting.role !== 'rolos admir' || product.ownerId !== acting.id) {
+      // Permit if acting is admin OR the owner of the product
+      if (!(acting.role === 'rolos admir' || product.ownerId === acting.id)) {
         return new HttpResponse(null, { status: 403 }) as StrictResponse<never>;
       }
 
@@ -381,8 +382,8 @@ export const handlers = [
         return new HttpResponse(null, { status: 404 }) as StrictResponse<never>;
       }
 
-      // Only admin owners can edit
-      if (acting.role !== 'rolos admir' || product.ownerId !== acting.id) {
+      // Allow admin to edit any product, or owners to edit their own
+      if (!(acting.role === 'rolos admir' || product.ownerId === acting.id)) {
         return new HttpResponse(null, { status: 403 }) as StrictResponse<never>;
       }
 

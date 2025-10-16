@@ -2,7 +2,7 @@
 import * as React from "react";
 import { Link, useLoaderData, useSearchParams } from "react-router-dom";
 import { Info, Search } from "lucide-react";
-import { getProducts } from "../api";
+import { getProducts, getUser, deleteProduct } from "../api";
 import { Badge } from "../components/badge";
 import {
   Breadcrumb,
@@ -48,6 +48,7 @@ export const loader = privateLoader(async ({ request }) => {
 
 export function Component() {
   const { summary, products } = useLoaderData() as ProductList;
+  const [currentUser, setCurrentUser] = React.useState<{ id?: string; role?: string } | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = React.useState(searchParams.get("q") || "");
 
@@ -57,6 +58,20 @@ export function Component() {
       { preventScrollReset: true },
     );
   };
+
+  React.useEffect(() => {
+    let mounted = true;
+    getUser()
+      .then((u) => {
+        if (mounted) setCurrentUser(u);
+      })
+      .catch(() => {
+        if (mounted) setCurrentUser(null);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <>
@@ -131,6 +146,7 @@ export function Component() {
                   <TableHead className="w-auto text-right lg:w-32">
                     Price
                   </TableHead>
+                  <TableHead className="w-auto text-right lg:w-32">Options</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -165,6 +181,32 @@ export function Component() {
                       {formatCurrency(parseInt(product.price, 10), {
                         maximumFractionDigits: 0,
                       })}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {/* Show Edit/Delete when user is admin (ownerId not available in list response) */}
+                      {currentUser?.role === "rolos admir" && (
+                        <div className="flex items-center justify-end gap-2">
+                          <Link to={`/add?id=${product.id}`}>
+                            <Button size="sm">Edit</Button>
+                          </Link>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={async () => {
+                              if (!confirm("Are you sure you want to delete this product?")) return;
+                              try {
+                                await deleteProduct(product.id);
+                                // simple reload to refresh list
+                                window.location.reload();
+                              } catch (e) {
+                                // ignore for now
+                              }
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
